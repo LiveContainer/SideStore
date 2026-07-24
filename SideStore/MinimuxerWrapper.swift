@@ -19,7 +19,9 @@ func bindTunnelConfig() async {
     let configBinding = TunnelConfigBinding(
         setTunnelIfaceIp: { value in Task { @MainActor in config.tunnelIfaceIp = value } },
         setTunnelPeerIp: { value in Task { @MainActor in config.tunnelPeerIp = value } },
-        setSubnetMask: { value in Task { @MainActor in config.subnetMask = value } }
+        setSubnetMask: { value in Task { @MainActor in config.subnetMask = value } },
+        getOverridePeerIp: { config.overridePeerIp },
+        setOverrideEffective: { value in Task { @MainActor in config.overrideEffective = value } }
     )
     await Minimuxer.shared.bindTunnelConfig(configBinding)
     #endif

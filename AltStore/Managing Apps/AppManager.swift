@@ -1451,6 +1451,20 @@ private extension AppManager
         }
         modifyAppExBundleIdOperation.addDependency(fetchProvisioningProfilesOperation)
         
+        /* Patch App Icon */
+        let patchAppIconOperation = PatchAppIconOperation(context: context)
+        patchAppIconOperation.resultHandler = { (result) in
+            switch result
+            {
+            case .failure(let error):
+                context.error = error
+            case .success:
+                debugLog("App icon patched successfully for \(context.bundleIdentifier)")
+            }
+        }
+        patchAppIconOperation.addDependency(deactivateAppsOperation)
+        patchAppIconOperation.addDependency(modifyAppExBundleIdOperation)
+        
         /* Resign */
         let resignAppOperation = ResignAppOperation(context: context)
         resignAppOperation.resultHandler = { (result) in
@@ -1464,8 +1478,7 @@ private extension AppManager
                 self.exportResginedAppsToDocsDir(resignedApp)
             }
         }
-        resignAppOperation.addDependency(deactivateAppsOperation)
-        resignAppOperation.addDependency(modifyAppExBundleIdOperation)
+        resignAppOperation.addDependency(patchAppIconOperation)
         progress.addChild(resignAppOperation.progress, withPendingUnitCount: 20)
         
         
@@ -1518,6 +1531,7 @@ private extension AppManager
             refreshAnisetteDataOperation,
             fetchProvisioningProfilesOperation,
             modifyAppExBundleIdOperation,
+            patchAppIconOperation,
             resignAppOperation,
             sendAppOperation,
             installOperation

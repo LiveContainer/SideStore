@@ -436,10 +436,17 @@ public extension InstalledApp
         return installedBackupAppUTI
     }
     
-    class func alternateIconURL(for app: AppProtocol) -> URL
+    public class func alternateIconURL(forBundleIdentifier bundleIdentifier: String) -> URL
     {
-        let installedBackupAppUTI = self.directoryURL(for: app).appendingPathComponent("AltIcon.png")
-        return installedBackupAppUTI
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let iconsDirectory = appSupport.appendingPathComponent("AppIcons", isDirectory: true)
+        try? FileManager.default.createDirectory(at: iconsDirectory, withIntermediateDirectories: true, attributes: nil)
+        return iconsDirectory.appendingPathComponent("\(bundleIdentifier).png")
+    }
+    
+    public class func alternateIconURL(for app: AppProtocol) -> URL
+    {
+        return self.alternateIconURL(forBundleIdentifier: app.bundleIdentifier)
     }
     
     var directoryURL: URL {
@@ -462,7 +469,7 @@ public extension InstalledApp
         return InstalledApp.installedBackupAppUTI(forBundleIdentifier: self.resignedBundleIdentifier)
     }
     
-    var alternateIconURL: URL {
+    public var alternateIconURL: URL {
         return InstalledApp.alternateIconURL(for: self)
     }
 }

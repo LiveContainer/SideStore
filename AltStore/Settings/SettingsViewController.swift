@@ -77,8 +77,9 @@ extension SettingsViewController
         case refreshSideJITServer   // row 2 - SideJITServer
         case resetPairingFile       // row 3 - Reset Pairing File
         case anisetteServers        // row 4 - Anisette Servers
-        case cacheManagement        // row 5 - Cache Management
-        case certificateManagement  // row 6 - Certificate Management
+        case vpnConfiguration       // row 5 - VPN Configuration
+        case cacheManagement        // row 6 - Cache Management
+        case certificateManagement  // row 7 - Certificate Management
         case wirelessPair           // row 8 - Wireless Pairing (only iOS 26+)
         case networkDiscovery       // row 9 - Network Discovery (Bonjour browser)
         case exportResignedApp      // row 10 - Export Resigned Apps (moved here from diagnostics)
@@ -1462,6 +1463,17 @@ extension SettingsViewController
                 
                 let vc = UIHostingController(rootView: anisetteServersView)
                 self.prepare(for: UIStoryboardSegue(identifier: "anisetteServers", source: self, destination: vc), sender: nil)
+
+            case .vpnConfiguration:
+                let vpnConfigurationView = VPNConfigurationView()
+                let vc = UIHostingController(rootView: vpnConfigurationView)
+
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithDefaultBackground()   // gives solid background
+                vc.navigationItem.scrollEdgeAppearance = appearance
+                vc.navigationItem.standardAppearance = appearance
+
+                navigationController?.pushViewController(vc, animated: true)
 
             case .certificateManagement:
                 let certificateManagementView = CertificatesView(presentingViewController: self)
