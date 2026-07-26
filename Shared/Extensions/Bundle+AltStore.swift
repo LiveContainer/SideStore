@@ -7,6 +7,13 @@
 //
 
 import Foundation
+import Security
+
+@_silgen_name("SecTaskCreateFromSelf")
+private func secTaskCreateFromSelf(_ allocator: CFAllocator?) -> Unmanaged<CFTypeRef>?
+
+@_silgen_name("SecTaskCopyValueForEntitlement")
+private func secTaskCopyValueForEntitlement(_ task: CFTypeRef, _ entitlement: CFString, _ error: UnsafeMutablePointer<Unmanaged<CFError>?>?) -> Unmanaged<CFTypeRef>?
 
 public extension Bundle
 {
@@ -63,6 +70,14 @@ public extension Bundle
     static let baseAltStoreAppGroupID = "group.com.SideStore.SideStore"
     static let isBundledWithLiveContainer = Bundle.main.bundleURL.lastPathComponent == "SideStoreApp.framework" || Bundle.main.bundleURL.lastPathComponent == "LiveWidgetExtension.appex"
 
+    private static let entitlementAppGroups: [String] = {
+        guard let task = secTaskCreateFromSelf(nil)?.takeRetainedValue(),
+              let value = secTaskCopyValueForEntitlement(task, "com.apple.security.application-groups" as CFString, nil)?.takeRetainedValue(),
+              let appGroups = value as? [String] else { return [] }
+
+        return appGroups
+    }()
+
     var appGroups: [String] {
         return self.infoDictionary?[Bundle.Info.appGroups] as? [String] ?? []
     }
@@ -76,10 +91,8 @@ public extension Bundle
     }
 
     var altstoreAppGroup: String? {
-        if Bundle.isBundledWithLiveContainer, let lcBundle = Bundle.lcBundle {
-            return lcBundle.appGroups.first { $0.contains(Bundle.baseAltStoreAppGroupID) }
-        }
-        return self.appGroups.first { $0.contains(Bundle.baseAltStoreAppGroupID) }
+        let appGroups = Bundle.entitlementAppGroups
+        return appGroups.first { $0.contains(Bundle.baseAltStoreAppGroupID) } ?? appGroups.first
     }
     
     var completeInfoDictionary: [String : Any]? {
