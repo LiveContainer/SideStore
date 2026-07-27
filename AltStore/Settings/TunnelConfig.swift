@@ -12,7 +12,7 @@ import Combine
 final class TunnelConfig: ObservableObject {
     static let shared = TunnelConfig()
 
-    private static let defaultOverrideIP: String = "10.7.0.1"
+    private static let defaultOverrideIP: String = ""
 
     @Published var tunnelIfaceIp: String?
     @Published var subnetMask: String?
