@@ -45,7 +45,7 @@ static Class LiveProcessHandlerClass = nil;
 }
 
 - (void) relaunchLC {
-    [NSClassFromString(@"LCSharedUtils") launchToGuestApp];
+    [NSClassFromString(@"LCSharedUtils") launchToGuestAppWithClassicMode:0];
 }
 
 @end

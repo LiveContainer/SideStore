@@ -31,5 +31,5 @@
 @end
 
 @interface LCSharedUtils : NSObject
-+ (BOOL)launchToGuestApp;
++ (BOOL)launchToGuestAppWithClassicMode:(NSUInteger)classicMode;
 @end
