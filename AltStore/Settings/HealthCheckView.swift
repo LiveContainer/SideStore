@@ -97,7 +97,6 @@ final class HealthCheckViewModel: ObservableObject {
         let overrideEffective = TunnelConfig.shared.overrideEffective
         
         let pairingType = Minimuxer.shared.getPairingFileType()
-        let isRp = pairingType == .rppairing
         let protocolStr: String
         switch pairingType {
         case .rppairing:
@@ -472,7 +471,7 @@ struct HealthCheckView: View {
                     isSatisfied: viewModel.ddiSatisfied
                 )
             }
-            
+
             // Section 3: Discovered Configs
             Section(header: Text("VPN IP Configuration")) {
                 ConfigRow(label: "Tunnel Iface IP", value: viewModel.tunnelIfaceIp)
