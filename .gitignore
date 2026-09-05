@@ -98,3 +98,6 @@ tmp
 
 scratch*.sh
 *.sh
+# Python
+__pycache__/
+*.pyc
