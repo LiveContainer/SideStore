@@ -13,6 +13,11 @@ from posix import getcwd
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / 'scripts/ci'
 BUILD_SETTINGS_OUTFILE = "project-build-settings.txt"
+SWIFTPM_GIT_CONFIG_ENV = (
+    "GIT_CONFIG_COUNT=1 "
+    "GIT_CONFIG_KEY_0=safe.bareRepository "
+    "GIT_CONFIG_VALUE_0=all"
+)
 
 # ----------------------------------------------------------
 # helpers
@@ -51,6 +56,9 @@ def runAndGet(cmd, cwd=None):
 def getenv(name, default=""):
     return os.environ.get(name, default)
 
+def with_swiftpm_git_config(cmd):
+    return f"{SWIFTPM_GIT_CONFIG_ENV} {cmd}"
+
 # ----------------------------------------------------------
 # SHARED
 # ----------------------------------------------------------
@@ -78,7 +86,7 @@ def count_new_commits(last_commit):
 # ----------------------------------------------------------
 def dump_project_settings(outdir=None):
     outfile = Path(outdir).resolve() / BUILD_SETTINGS_OUTFILE if outdir else BUILD_SETTINGS_OUTFILE
-    run(f"xcodebuild -showBuildSettings 2>&1 > '{outfile}'")
+    run(with_swiftpm_git_config(f"xcodebuild -showBuildSettings 2>&1 > '{outfile}'"))
 
 def _extract_setting(cmd):
     out = runAndGet(cmd + " || true").strip()   # prevent grep failure from aborting
@@ -94,10 +102,12 @@ def _read_dumped_build_setting(name):
 
 def query_build_setting(name):
     return _extract_setting(
-        f"xcodebuild -showBuildSettings 2>&1 "
-        f"| grep '{name} = ' "
-        "| tail -1 "
-        "| sed -e 's/.*= //g'"
+        with_swiftpm_git_config(
+            f"xcodebuild -showBuildSettings 2>&1 "
+            f"| grep '{name} = ' "
+            "| tail -1 "
+            "| sed -e 's/.*= //g'"
+        )
     )
 
 def get_product_name():  return query_build_setting("PRODUCT_NAME")
@@ -143,7 +153,7 @@ def build():
     run("mkdir -p build/logs")
     run(
         "set -o pipefail && "
-        "NSUnbufferedIO=YES make -B build "
+        f"{SWIFTPM_GIT_CONFIG_ENV} NSUnbufferedIO=YES make -B build "
         "2>&1 | tee -a build/logs/build.log | xcbeautify --renderer github-actions"
     )
     run("make fakesign | tee -a build/logs/build.log")
@@ -157,7 +167,7 @@ def build():
 def tests_build():
     run("mkdir -p build/logs")
     run(
-        "NSUnbufferedIO=YES make -B build-tests "
+        f"{SWIFTPM_GIT_CONFIG_ENV} NSUnbufferedIO=YES make -B build-tests "
         "2>&1 | tee -a build/logs/tests-build.log | xcbeautify --renderer github-actions"
     )
 
@@ -207,7 +217,7 @@ def tests_run(model):
     if not is_sim_booted(model):
         boot_sim_sync(model)
 
-    run("make run-tests 2>&1 | tee -a build/logs/tests-run.log")
+    run(f"{SWIFTPM_GIT_CONFIG_ENV} make run-tests 2>&1 | tee -a build/logs/tests-run.log")
     run("zip -r -9 ./test-results.zip ./build/tests")
 
 # ----------------------------------------------------------
